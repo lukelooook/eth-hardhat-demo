@@ -1,9 +1,7 @@
-import hre from "hardhat";
+import { viem } from "hardhat";
 
 async function main() {
   // 部署时生成的一样的本地账户
-  const { viem } = hre;
-
   const [sender, receiver] = await viem.getWalletClients();
   const publicClient = await viem.getPublicClient();
 
