@@ -2,13 +2,15 @@ import hre from "hardhat";
 
 async function main() {
   // 部署时生成的一样的本地账户
-  const [sender, receiver] = await hre.viem.getWalletClients();
-  const publicClient = await hre.viem.getPublicClient();
+  const { viem } = hre;
+
+  const [sender, receiver] = await viem.getWalletClients();
+  const publicClient = await viem.getPublicClient();
 
   const tokenAddress = "0x你的合约地址"; // TODO: 替换为真正的 MyToken 地址
 
   // 关联已部署的 MyToken 合约
-  const token = await hre.viem.getContractAt("FirstToken", tokenAddress, {
+  const token = await viem.getContractAt("FirstToken", tokenAddress, {
     walletClient: sender,
   });
 
