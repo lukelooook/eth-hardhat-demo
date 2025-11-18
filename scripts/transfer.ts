@@ -1,6 +1,9 @@
-import { viem } from "hardhat";
+import { network } from "hardhat"; // 导入 network 而不是直接导入 viem
+
 
 async function main() {
+  // 通过 network.connect() 获取 viem 实例
+  const { viem } = await network.connect();
   // 部署时生成的一样的本地账户
   const [sender, receiver] = await viem.getWalletClients();
   const publicClient = await viem.getPublicClient();
