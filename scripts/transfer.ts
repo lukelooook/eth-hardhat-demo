@@ -1,8 +1,8 @@
 import { network } from "hardhat";
 
 async function main() {
-  // 明确指定网络（与项目中其他脚本保持一致）
-  const { viem } = await network.connect({ network: "hardhat" });
+  // 连接到命令行指定的网络（如 --network localhost 会自动匹配）
+  const { viem } = await network.connect();
 
   // 获取钱包客户端和公共客户端
   const [sender, receiver] = await viem.getWalletClients();

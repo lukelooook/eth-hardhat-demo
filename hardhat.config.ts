@@ -20,6 +20,11 @@ export default defineConfig({
     },
   },
   networks: {
+    localhost: {
+      type: "http",
+      url: "http://127.0.0.1:8545", // 本地节点默认地址
+      chainType: "l1", // 根据实际节点类型设置（l1 或 op 等）
+    },
     hardhatMainnet: {
       type: "edr-simulated",
       chainType: "l1",
