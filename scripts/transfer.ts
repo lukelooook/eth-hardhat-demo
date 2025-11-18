@@ -1,19 +1,17 @@
-import { network } from "hardhat"; // 导入 network 而不是直接导入 viem
-
+import { network } from "hardhat";
 
 async function main() {
-  // 通过 network.connect() 获取 viem 实例
-  const { viem } = await network.connect();
-  // 部署时生成的一样的本地账户
+  // 明确指定网络（与项目中其他脚本保持一致）
+  const { viem } = await network.connect({ network: "hardhat" });
+
+  // 获取钱包客户端和公共客户端
   const [sender, receiver] = await viem.getWalletClients();
   const publicClient = await viem.getPublicClient();
 
-  const tokenAddress = "0x你的合约地址"; // TODO: 替换为真正的 MyToken 地址
+  const tokenAddress = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"; // 替换为实际合约地址
 
-  // 关联已部署的 MyToken 合约
-  const token = await viem.getContractAt("FirstToken", tokenAddress, {
-    client: sender, // 这里将 walletClient 改为 client
-  });
+  // 直接获取合约实例，不指定 client（使用默认客户端）
+  const token = await viem.getContractAt("FirstToken", tokenAddress);
 
   console.log("Sender:", sender.account.address);
   console.log("Receiver:", receiver.account.address);
@@ -25,19 +23,16 @@ async function main() {
   console.log("Before — sender:", beforeSender.toString());
   console.log("Before — receiver:", beforeReceiver.toString());
 
-  // 从 sender 向 receiver 转 1000 单位
-  const amount = 1000n * 10n ** 18n; // 假设 decimals=18
-  const txHash = await token.write.transfer([
-    receiver.account.address,
-    amount,
-  ]);
+  // 转账时显式指定发送账户（解决类型匹配问题）
+  const amount = 1000n * 10n ** 18n;
+  const txHash = await token.write.transfer([receiver.account.address, amount], {
+    account: sender.account, // 这里明确指定发送账户
+  });
 
   console.log("Transfer tx hash:", txHash);
-
-  // 等待交易确认
   await publicClient.waitForTransactionReceipt({ hash: txHash });
 
-  // 再查一次余额
+  // 验证余额变化
   const afterSender = await token.read.balanceOf([sender.account.address]);
   const afterReceiver = await token.read.balanceOf([receiver.account.address]);
 
