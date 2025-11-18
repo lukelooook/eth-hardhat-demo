@@ -12,7 +12,7 @@ async function main() {
 
   // 关联已部署的 MyToken 合约
   const token = await viem.getContractAt("FirstToken", tokenAddress, {
-    walletClient: sender,
+    client: sender, // 这里将 walletClient 改为 client
   });
 
   console.log("Sender:", sender.account.address);
