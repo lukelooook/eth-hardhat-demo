@@ -1,0 +1,77 @@
+在你的项目中，`tokenAddress`（即 `FirstToken` 合约的部署地址）需要通过**部署合约**后获取，具体方式取决于你使用的部署工具（Hardhat Ignition 或直接脚本部署）。以下是详细步骤：
+
+
+### 1. 确认 `FirstToken` 合约已部署
+首先需要确保 `FirstToken` 合约已经部署到目标网络（如本地节点 `localhost`、测试网 `sepolia` 等）。如果尚未部署，需先完成部署。
+
+
+### 2. 通过 Hardhat Ignition 部署并获取地址
+你的项目中使用了 **Hardhat Ignition**（见 `ignition/modules/Counter.ts` 示例），推荐用同样的方式部署 `FirstToken` 合约，步骤如下：
+
+#### 步骤 1：创建 `FirstToken` 的 Ignition 部署模块
+在 `ignition/modules` 目录下创建 `FirstToken.ts`，定义部署逻辑：
+```typescript
+// ignition/modules/FirstToken.ts
+import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
+
+export default buildModule("FirstTokenModule", (m) => {
+  // 部署 FirstToken 合约（如果有构造函数参数，需传入，例如：m.contract("FirstToken", [arg1, arg2])）
+  const firstToken = m.contract("FirstToken");
+  return { firstToken };
+});
+```
+
+#### 步骤 2：部署合约到目标网络
+执行部署命令（以本地节点 `localhost` 为例）：
+```bash
+# 先启动本地节点（另一个终端）
+npx hardhat node
+
+# 部署 FirstToken 到本地节点
+npx hardhat ignition deploy ignition/modules/FirstToken.ts --network localhost
+```
+
+#### 步骤 3：从部署输出中获取地址
+部署成功后，终端会输出合约地址，类似：
+```
+Deployed FirstTokenModule.firstToken to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
+```
+其中 `0x5FbDB2315678afecb367f032d93F642f64180aa3` 就是 `tokenAddress`。
+
+
+### 3. 通过部署记录文件获取地址
+Hardhat Ignition 会将部署记录保存在项目根目录的 `.ignition/deployments` 文件夹中，可直接从中读取：
+- 路径示例：`.ignition/deployments/localhost/FirstTokenModule/deployed_addresses.json`
+- 打开文件，找到 `firstToken` 对应的地址即可。
+
+
+### 4. 临时部署（用于测试或脚本）
+如果需要在脚本中临时部署并获取地址（如测试场景），可直接在 `transfer.ts` 中添加部署逻辑：
+```typescript
+// 在 transfer.ts 的 main 函数中先部署合约，再获取地址
+async function main() {
+  const { viem } = await network.connect();
+
+  // 临时部署 FirstToken 合约（如果已有部署，可注释此步骤）
+  const firstToken = await viem.deployContract("FirstToken");
+  const tokenAddress = firstToken.address; // 直接从部署结果获取地址
+  console.log("FirstToken deployed to:", tokenAddress);
+
+  // 后续使用 tokenAddress 进行交互...
+}
+```
+
+
+### 5. 替换代码中的占位符
+将获取到的地址替换 `transfer.ts` 中的占位符：
+```typescript
+// 替换为实际部署的地址
+const tokenAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+```
+
+
+### 关键注意事项
+- 部署网络需一致：如果部署到 `localhost`，运行 `transfer.ts` 时需指定 `--network localhost`；如果部署到 `sepolia`，则需用 `--network sepolia`。
+- 重新部署后地址会变化：每次重新部署合约（尤其是本地节点），地址会更新，需重新获取并替换。
+
+通过以上方式，即可正确获取 `FirstToken` 合约的地址并用于转账脚本。
